@@ -318,3 +318,5 @@ appClient.fetchDone(totalFetchedNew, error)
 appClient.beginFetch('name.huizhe.leiz', {
 	url: 'http://tu.duowan.com/tag/5037.html'
 });
+window.fetchJSLoaded = window.fetchJSLoaded || {};
+window.fetchJSLoaded['name.huizhe.leiz'] = true;
