@@ -45,7 +45,7 @@ request.url += encodeURIComponent(k)+ "=" + encodeURIComponent(request.data[k]);
 request.data = null;
 delete request['data'];
 }
-if (request.url.indexOf("/")== 0 || request.url.indexOf(location.protocol + "" + location.host + "/")== 0){
+if (request.url.indexOf("/")== 0 || request.url.indexOf(location.protocol + "//" + location.host + "/")== 0){
 appClient._ajax_XMLHttpRequest(request, callback);
 } else {
 appClient._ajax_native(request, callback);
@@ -109,7 +109,7 @@ var p = appClient.getPlatform();
 if (p == 'ios'){
 var id = ++_appAsyncCount;
 _appAsyncCallback[id] = callback;
-location.href = "app:" + name + "?" + appClient.paramsToQueryString({
+location.href = "app://async-" + name + "?" + appClient.paramsToQueryString({
 "async_data": JSON.stringify(data),
 "async_id": id
 });
@@ -156,7 +156,7 @@ f.call(null);
 toast: function(str){
 var p = appClient.getPlatform();
 if (p == 'ios'){
-location.href = 'app:' + encodeURIComponent(str);
+location.href = 'app://toast?description=' + encodeURIComponent(str);
 } else if (p == 'android'){
 commonHook.toast(str);
 } else {
@@ -166,7 +166,7 @@ alert(str);
 finish: function(){
 var p = appClient.getPlatform();
 if (p == 'ios'){
-location.href = "app:";
+location.href = "app://go-back";
 } else if (p == 'android'){
 commonHook.closeWeb();
 } else {
@@ -205,7 +205,7 @@ return 'others';
 fetchDone: function(count, error){
 var p = appClient.getPlatform();
 if (p == 'ios'){
-location.href = 'app:' + appClient.paramsToQueryString({
+location.href = 'app://fetchdone?' + appClient.paramsToQueryString({
 'count': parseInt(count),
 'error': error || ""
 });
@@ -261,10 +261,10 @@ return;
 }
 appClient.ajax({
 method: 'GET',
-url: 'http:' + match[1],
+url: 'http://tu.duowan.com/index.php?r=show/getByGallery/&gid=' + match[1],
 headers: {
 'User-Agent': userAgent,
-'Refer': 'http:' + match[1] + '.html'
+'Refer': 'http://tu.duowan.com/gallery/' + match[1] + '.html'
 }
 }, function(response, request){
 var json = JSON.parse(response.string);
@@ -277,7 +277,7 @@ request: {
 url: p.url || p.source,
 headers: {
 'User-Agent': userAgent,
-'Refer': 'http:' + match[1] + '.html'
+'Refer': 'http://tu.duowan.com/gallery/' + match[1] + '.html'
 }
 },
 title: p.add_intro
