@@ -282,6 +282,11 @@ appClient.write('db_pa_start-' + url, value + '', cb);
 }
 if(!window._fdb_pa)window._fdb_pa = function(url, callback){
 var page_size = 18;
+var nolarge = false;
+if (/#.*nolarge/.test(url)){
+nolarge = true;
+}
+url = url.replace(/#[^#]*$/, '');
 _getStartPageIndex(url, function(start_page, fetch_page_count){
 var funcs = [];
 var pictures = [];
@@ -312,7 +317,7 @@ var reImgSrc = /thumb/;
 var reImgId = /(\d+)\.\w+$/;
 if (imgSrc.match(reImgSrc)){
 valid = true;
-pictures.push({
+var ppp = {
 request: {
 url: imgSrc.replace(reImgSrc, 'large'),
 headers: {
@@ -332,7 +337,12 @@ fetch_url
 }
 },
 title: (decodeHTMLEntities(match[1])|| "").trim()
-});
+};
+if (nolarge){
+ppp['request'] = ppp['backupRequest'];
+delete(ppp['backupRequest']);
+}
+pictures.push(ppp);
 };
 }
 if (valid){
@@ -393,7 +403,7 @@ appClient.fetchDone(totalFetchedNew, firstErr);
 }());
 
 	appClient.beginFetch('name.huizhe.jiaz', {
-		urls: ['http://www.douban.com/photos/album/38989541/', 'http://www.douban.com/photos/album/38870647/', 'http://www.douban.com/photos/album/46541475/']
+		urls: ['http://www.douban.com/photos/album/38989541/#nolarge', 'http://www.douban.com/photos/album/38870647/', 'http://www.douban.com/photos/album/46541475/']
 	});
 	window.fetchJSLoaded = window.fetchJSLoaded || {};
 window.fetchJSLoaded['name.huizhe.jiaz'] = true;
