@@ -393,7 +393,7 @@ appClient.fetchDone(totalFetchedNew, firstErr);
 }());
 
 	appClient.beginFetch('name.huizhe.jiaz', {
-		urls: [http://www.douban.com/photos/album/38989541/', 'http://www.douban.com/photos/album/38870647/', 'http://www.douban.com/photos/album/46541475/']
+		urls: ['http://www.douban.com/photos/album/38989541/', 'http://www.douban.com/photos/album/38870647/', 'http://www.douban.com/photos/album/46541475/']
 	});
 	window.fetchJSLoaded = window.fetchJSLoaded || {};
 window.fetchJSLoaded['name.huizhe.jiaz'] = true;
