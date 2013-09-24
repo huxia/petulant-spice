@@ -382,9 +382,9 @@ callback(pictures, err);
 });
 };
 var MIN_PICTURES_COUNT = 30;
+var _fetched = 0;
 appClient.registerFetchFunction('name.huizhe.jiaz', function(config){
 var funcs = [];
-var allPictures = [];
 var firstErr = null;
 for(var i=0;i<config.urls.length;i++){
 (function(){
@@ -392,6 +392,7 @@ var url = config.urls[i];
 funcs.push(function(cb){
 window._fdb_pa(url, function(pictures, err){
 if(err && !firstErr)firstErr = err;
+var allPictures = [];
 if(pictures && pictures.length){
 for(var j=0;j<pictures.length;j++){
 var p = pictures[j];
@@ -400,23 +401,24 @@ allPictures.push(p);
 }
 }
 }
-if (allPictures.length > MIN_PICTURES_COUNT){
+_addPictures(allPictures, function(totalFetchedNew){
+_fetched += totalFetchedNew;
+if (_fetched > MIN_PICTURES_COUNT){
 cb('full');
-return;
-}
+}else{
 cb(null);
+}
+});
 });
 });
 })();
 }
 async.series(funcs, function(err){
 if(err == 'full')err = null;
-_addPictures(allPictures, function(totalFetchedNew){
-if(allPictures.length != 0){
+if(_fetched > 0){
 firstErr = null;
 }
-appClient.fetchDone(totalFetchedNew, firstErr);
-});
+appClient.fetchDone(_fetched, firstErr);
 });
 });
 }());
