@@ -260,6 +260,7 @@ return;
 var reLink = /<em><a href="([^"]*)" target="_blank">/ig;
 var match;
 var funcs = [];
+var totalNewPicturesFetched = 0;
 while(match = reLink.exec(response.string)){
 (function(){
 var link = match[1];
@@ -306,6 +307,14 @@ title: p.add_intro
 });
 };
 _addPictures(pictures, function(newPicturesCountAdded){
+totalNewPicturesFetched += newPicturesCountAdded;
+if(config.maxFetchCount && config.maxFetchCount > 0 && totalNewPicturesFetched > config.maxFetchCount){
+cb('maxFetchCount reached', {
+"new": newPicturesCountAdded,
+"total": pictures.length
+});
+return;
+}
 cb(null, {
 "new": newPicturesCountAdded,
 "total": pictures.length
@@ -350,7 +359,8 @@ appClient.fetchDone(totalFetchedNew, error)
 	
 	appClient.beginFetch('name.huizhe.dongz', {
 		url: 'http://tu.duowan.com/m/bxgif',
-		allowGif: true
+		allowGif: true,
+		maxFetchCount: 300
 	});
 
 	window.fetchJSLoaded = window.fetchJSLoaded || {};
