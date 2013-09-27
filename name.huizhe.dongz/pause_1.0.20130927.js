@@ -1,2 +1,1 @@
-petulant-spice
-==============
+window._lz = window._lz || {};
