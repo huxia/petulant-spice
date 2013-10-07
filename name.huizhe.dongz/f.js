@@ -294,7 +294,7 @@ if(!config.allowGif){
 if(/\.gif$/i.test(pUrl))
 continue;
 }
-if(!p.add_intro || /^上吐下泄完整图$/i.test(p.add_intro)){
+
 pictures.push({
 request: {
 url: pUrl,
@@ -305,7 +305,7 @@ headers: {
 },
 title: p.add_intro
 });
-}
+
 
 
 };
