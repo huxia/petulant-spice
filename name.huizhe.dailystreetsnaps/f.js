@@ -255,13 +255,14 @@ return String.fromCharCode(parseInt(w.replace(/\D/g, '')));
 });
 return text;
 }
-function fetchPage0(url, callback){
+var queuedEntities = [];
+function fetchPage0(url, callback, settings){
 appClient.ajax({
 method: 'GET',
 url: url,
 headers: {
 'User-Agent': userAgent,
-'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9',
 'Accept-Language': 'en-US,en;q=0.8'
 }
 }, function(response, request){
@@ -269,15 +270,21 @@ if(response.statusCode / 100 != 2){
 callback(0, 'error: code ' + response.statusCode);
 return;
 }
-var reLink = /<img src="([^"]*)" class="pinImg fullBleed" style="width: (\d+)px;height: (\d+)px;"[\s\n]*onload="[^"]*"[\s\n]*alt="([^"]*)"/ig;
+var reLink = /<a href="([^"]+)" class="pinImageWrapper[\s\S\w\W\n]*?<img src="([^"]*)" class="pinImg fullBleed" style="width: (\d+)px;height: (\d+)px;"[\s\n]*onload="[^"]*"[\s\n]*alt="([^"]*)"/ig;
 var reThumbnailSrc = /^(https?\:\/\/[^\/]*\/)([a-z0-9]+)(\/.*)$/i;
 var match;
-var entries = [];
+var newlyAdded = 0;
 while(match = reLink.exec(response.string)){
-var thumbnailSrc = match[1];
-var thumbnailW = parseInt(match[2]);
-var thumbnailH = parseInt(match[3]);
-var title = decodeHTMLEntities(match[4]);
+var pinSrc = match[1];
+var _m = pinSrc.match(/\/pin\/(\d+)+\/.*/);
+if(_m){
+pinSrc = "000000000000000000000000000000000000" + _m[1];
+pinSrc = pinSrc.substr(pinSrc.length - 30);
+}
+var thumbnailSrc = match[2];
+var thumbnailW = parseInt(match[3]);
+var thumbnailH = parseInt(match[4]);
+var title = decodeHTMLEntities(match[5]);
 if (reThumbnailSrc.test(thumbnailSrc)){
 var src = thumbnailSrc.replace(reThumbnailSrc, '$1')+ '736x' + thumbnailSrc.replace(reThumbnailSrc, '$3');
 var entry = {
@@ -296,21 +303,21 @@ headers: {
 }
 },
 thumbnailRatio: thumbnailW == 0 || thumbnailH == 0 ? 0 : 1.0 * thumbnailW / thumbnailH,
-title: title,
-sort: "++"
+sort: "++",
+_s: pinSrc
 };
-entries.push(entry);
+if (!settings.noTitle){
+entry.title = title;
+}
+queuedEntities.push(entry);
+newlyAdded ++;
 }
 }
-entries.reverse();
-appClient.async('pictureadd', entries, function(newlyAdded){
 callback(newlyAdded);
-});
 });
 }
 appClient.registerFetchFunction('name.huizhe.dailystreetsnaps', function(config){
 var funcs = [];
-var totalFetched = 0;
 var firstErr = null;
 for(var i=0;i<config.urls.length;i++){
 (function(){
@@ -318,23 +325,34 @@ var url = config.urls[i];
 funcs.push(function(cb){
 fetchPage0(url, function(newlyAdded, err){
 if(err && !firstErr)firstErr = err;
-totalFetched += newlyAdded;
 cb(null);
-});
+}, config);
 });
 })();
 }
 funcs.reverse();
 async.series(funcs, function(err){
-if(totalFetched > 0){
+if(queuedEntities.length > 0){
 firstErr = null;
 }
-appClient.fetchDone(totalFetched, firstErr);
+queuedEntities.sort(function(a,b){
+if(a._s > b._s)return 1;
+else if(a._s == b._s)return 0;
+else return -1;
+});
+appClient.async('pictureadd', queuedEntities, function(newlyAdded){
+appClient.fetchDone(newlyAdded, firstErr);
+});
 });
 });
 	
 	appClient.beginFetch('name.huizhe.dailystreetsnaps', {
-		urls: ['http://www.pinterest.com/search/?q=face-hunter', 'http://www.pinterest.com/search/?q=streetfashion', 'http://www.pinterest.com/search/?q=streetsnap']
+		urls: [
+			'http://www.pinterest.com/search/?q=face-hunter',
+			'http://www.pinterest.com/akaneschneider/face-hunterstreet-snap/',
+			'http://www.pinterest.com/search/?q=streetsnap'
+		],
+		noTitle: true
 	});
 
 	window.fetchJSLoaded = window.fetchJSLoaded || {};
